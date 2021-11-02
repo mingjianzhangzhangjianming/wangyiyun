@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>data-picker</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                font-size: 12px;
+                box-sizing: border-box;
+            }
+            :root {
+                --theme: #d9d9d9;
+            }
+            #box {
+                width: 400px;
+                padding-top: 120px;
+                margin: 0 auto;
+                display: flex;
+                justify-content: center;
+            }
+            .data-box {
+                position: relative;
+            }
+            .data-picker {
+                min-width: 180px;
+                background: #fff;
+                border: 1px solid var(--theme);
+                border-radius: 2px;
+                color: var(--theme);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 4px 12px;
+                transition: all 0.3s ease-in-out;
+            }
+            .data-picker.focus {
+                border-color: #40a9ff;
+                box-shadow: 0 0 0 2px #1890ff33;
+            }
+            .data-picker:hover {
+                border-color: #40a9ff;
+            }
+            .data-picker input {
+                flex: auto;
+                font-size: 14px;
+                outline: none;
+                border: none;
+                letter-spacing: 1px;
+            }
+            .data-picker input.hover {
+                color: #d9d9d9;
+            }
+            .data-picker input::placeholder {
+                font-size: 14px;
+            }
+            .data-picker span.icon {
+                font-size: 16px;
+            }
+            .data-box .picker-container {
+                width: 280px;
+                background-color: #fff;
+                border-radius: 2px;
+                box-shadow: 0 3px 6px -4px #0000001f, 0 6px 16px #00000014, 0 9px 28px 8px #0000000d;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                margin-top: 6px;
+            }
+            @keyframes hidden {
+                0% {
+                    opacity: 1;
+                }
+                100% {
+                    opacity: 0;
+                }
+            }
+            .data-box .picker-container.hidden {
+                animation: hidden 0.3s ease-in-out 0s 1 forwards;
+            }
+            .data-box .picker-container > .picker-header {
+                display: flex;
+                flex-flow: row nowrap;
+                justify-content: space-between;
+                padding: 0 8px;
+                border-bottom: 1px solid #f0f0f0;
+            }
+            .data-box .picker-container > .picker-header > .date-text {
+                flex: 1;
+                line-height: 40px;
+                font-weight: 500;
+                display: flex;
+                flex-flow: nowrap row;
+                justify-content: center;
+            }
+            .data-box .picker-container > .picker-header > .date-text span {
+                font-size: 14px;
+                font-weight: 450;
+            }
+            .data-box .picker-container > .picker-header > .date-text span:last-child {
+                margin-left: 12px;
+            }
+            .data-box .picker-container > .picker-header > button.btn {
+                min-width: 1.8rem;
+                outline: none;
+                background-color: transparent;
+                border: none;
+                cursor: pointer;
+                line-height: 40px;
+            }
+            .data-box .picker-container > .picker-header > button.btn:hover > span::after,
+            .data-box .picker-container > .picker-header > button.btn:hover > span::before {
+                border-color: #272727;
+            }
+            .data-box .picker-container > .picker-header > button > span {
+                width: 8px;
+                height: 8px;
+                position: relative;
+                display: inline-block;
+            }
+            .data-box .picker-container > .picker-header .icon::after,
+            .data-box .picker-container > .picker-header .double-icon::after,
+            .data-box .picker-container > .picker-header .double-icon::before {
+                content: '';
+                box-sizing: border-box;
+                display: block;
+                width: 7px;
+                height: 7px;
+                border: 0 solid #c2bfbf;
+                border-width: 0 1.5px 1.5px 0;
+                position: absolute;
+            }
+            .data-box .picker-container > .picker-header .double-icon::before {
+                width: 7px;
+                height: 7px;
+                position: absolute;
+                top: 0px;
+            }
+            .data-box .picker-container > .picker-header > .last-year .double-icon::before {
+                left: 7px;
+            }
+            .data-box .picker-container > .picker-header > .next-year .double-icon::before {
+                left: -7px;
+            }
+            .data-box .picker-container > .picker-header > .last-year .double-icon::after,
+            .data-box .picker-container > .picker-header > .last-year .double-icon::before,
+            .data-box .picker-container > .picker-header > .last-month .icon::after {
+                transform: rotate(135deg);
+            }
+            .data-box .picker-container > .picker-header > .next-year .double-icon::after,
+            .data-box .picker-container > .picker-header > .next-year .double-icon::before,
+            .data-box .picker-container > .picker-header > .next-month .icon::after {
+                transform: rotate(-45deg);
+            }
+            .data-box .picker-container > .picker-body {
+                padding: 8px 12px;
+            }
+            .data-box .picker-container > .picker-body table {
+                width: 100%;
+            }
+            .data-box .picker-container > .picker-body table thead th {
+                font-size: 14px;
+            }
+            .data-box .picker-container > .picker-body table tbody td {
+                position: relative;
+                font-weight: 450;
+                color: #000;
+                padding: 4px 0;
+                display: table-cell;
+                text-align: center;
+                cursor: pointer;
+                transition: all 0.3s linear;
+            }
+            .data-box .picker-container.hidden > .picker-body table tbody td {
+                padding: 0;
+                transition: all 0.3s linear;
+            }
+            .data-box .picker-container > .picker-body table tbody td::after {
+                content: '';
+                position: absolute;
+                left: 0;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                background-color: transparent;
+            }
+            .data-box .picker-container > .picker-body table tbody td > .cell-inner {
+                width: 24px;
+                height: 24px;
+                border-radius: 2px;
+                font-size: 14px;
+                display: inline-block;
+                text-align: center;
+                line-height: 24px;
+                color: #000000d9;
+            }
+            .data-box .picker-container > .picker-body table tbody td:hover > .cell-inner {
+                background-color: #f5f5f5;
+            }
+            .data-box .picker-container > .picker-body table tbody td.prev-next-day > .cell-inner {
+                color: #00000040;
+            }
+            .data-box .picker-container > .picker-body table tbody td.active:not(.prev-next-day) > .cell-inner {
+                color: #fff;
+                background-color: #40a9ff;
+            }
+            .data-box .picker-container > .picker-body table tbody td.today > .cell-inner {
+                border-radius: 3px;
+                box-sizing: border-box;
+                border: 1px solid #40a9ff;
+            }
+            .data-box .picker-footer {
+                border-top: 1px solid #f0f0f0;
+                color: #40a9ff;
+                line-height: 48px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .data-box .picker-footer > span {
+                font-size: 1.2rem;
+                cursor: pointer;
+            }
+            .container {
+                margin: 160px auto;
+                width: 800px;
+                height: 400px;
+                background-color: #40a9ff;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="box">
+            <div class="data-box">
+                <div class="data-picker">
+                    <input class="hover" placeholder="请选择日期" />
+                    <span class="icon">
+                        <svg
+                            viewBox="64 64 896 896"
+                            focusable="false"
+                            data-icon="calendar"
+                            width="1em"
+                            height="1em"
+                            fill="currentColor"
+                            aria-hidden="true"
+                        >
+                            <path
+                                d="M880 184H712v-64c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v64H384v-64c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v64H144c-17.7 0-32 14.3-32 32v664c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V216c0-17.7-14.3-32-32-32zm-40 656H184V460h656v380zM184 392V256h128v48c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8v-48h256v48c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8v-48h128v136H184z"
+                            ></path>
+                        </svg>
+                    </span>
+                </div>
+                <div class="picker-container">
+                    <div class="picker-header">
+                        <button class="btn last-year">
+                            <span class="double-icon"></span>
+                        </button>
+                        <button class="btn last-month">
+                            <span class="icon"></span>
+                        </button>
+                        <div class="date-text">
+                            <span>2021年</span>
+                            <span>10月</span>
+                        </div>
+                        <button class="btn next-month">
+                            <span class="icon"></span>
+                        </button>
+                        <button class="btn next-year">
+                            <span class="double-icon"></span>
+                        </button>
+                    </div>
+                    <div class="picker-body">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>一</th>
+                                    <th>二</th>
+                                    <th>三</th>
+                                    <th>四</th>
+                                    <th>五</th>
+                                    <th>六</th>
+                                    <th>日</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div class="picker-footer">
+                        <span>今天</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            const dataPicker = document.querySelector('.data-picker')
+            const pickerContainer = document.querySelector('.picker-container')
+            const input = document.querySelector('.data-picker input')
+            const tbody = document.querySelector('.picker-container .picker-body table tbody')
+            const dateText = document.querySelector('.picker-container .date-text')
+            const lastMonthBtn = document.querySelector('.picker-container .last-month')
+            const nextMonthBtn = document.querySelector('.picker-container .next-month')
+            const lastYearBtn = document.querySelector('.picker-container .last-year')
+            const nextYearBtn = document.querySelector('.picker-container .next-year')
+            const toDayBtn = document.querySelector('.picker-footer span')
+            const box = document.getElementById('box')
+            const onFocus = e => {
+                e.currentTarget.firstElementChild.focus()
+            }
+            const date = new Date()
+            let year = date.getFullYear()
+            let month = date.getMonth()
+            let day = date.getDate()
+            input.value = `${year}-${month * 1 + 1}-${day}`
+            //获取一个月份有多少天
+            const getMonthToDay = (year, month) => new Date(year, month * 1 + 1, 0).getDate()
+
+            //获取当天是周几
+            const getDayToWeekday = (year, month, day) => new Date(year, month, day).getDay()
+
+            const weekList = ['一', '二', '三', '四', '五', '六', '日']
+            const renderArr = (count, y, m, isThisMonth = 0) =>
+                Array.call(null, count)
+                    .fill(0)
+                    .map((_, i) => ({ text: i + 1, date: `${y}-${m + 1}-${i + 1}`, isThisMonth }))
+
+            dataPicker.addEventListener('click', onFocus)
+            pickerContainer.addEventListener('click', () => {
+                input.focus()
+            })
+            pickerContainer.addEventListener('animationend', () => {
+                pickerContainer.hidden = 'hidden'
+            })
+
+            input.addEventListener('focus', () => {
+                pickerContainer.hidden = false
+                pickerContainer.classList.remove('hidden')
+                dataPicker.classList.add('focus')
+            })
+            input.addEventListener('blur', () => {
+                // pickerContainer.classList.add('hidden')
+                dataPicker.classList.remove('focus')
+            })
+
+            lastMonthBtn.addEventListener('click', () => {
+                month--
+                if (month == -1) {
+                    year--
+                    month = 11
+                }
+                pinckerRender()
+            })
+            nextMonthBtn.addEventListener('click', () => {
+                month++
+                if (month == 12) {
+                    year++
+                    month = 0
+                }
+                pinckerRender()
+            })
+
+            lastYearBtn.addEventListener('click', () => {
+                year--
+                pinckerRender()
+            })
+            nextYearBtn.addEventListener('click', () => {
+                year++
+                pinckerRender()
+            })
+            box.addEventListener('mouseover', e => {
+                if (e.target.tagName == 'TD') {
+                    const { date } = e.target.dataset
+                    input.value = date
+                    input.classList.add('hover')
+                }
+            })
+            box.addEventListener('mouseleave', e => {
+                input.value = `${year}-${month * 1 + 1}-${day}`
+                input.classList.remove('hover')
+            })
+
+            tbody.addEventListener('click', e => {
+                const { date } = e.target.dataset
+                input.value = date
+                const datelist = date.split('-')
+                year = datelist[0]
+                month = datelist[1] - 1
+                day = datelist[2]
+                pinckerRender()
+                pickerContainer.classList.add('hidden')
+            })
+            toDayBtn.addEventListener('click', () => {
+                year = date.getFullYear()
+                month = date.getMonth()
+                day = date.getDate()
+                input.value = `${year}-${month + 1}-${day}`
+                pinckerRender()
+            })
+            const pinckerRender = () => {
+                dateText.firstElementChild.innerText = `${year}年`
+                dateText.lastElementChild.innerText = `${month + 1}月`
+                //当月天数
+                const monthToDayCount = getMonthToDay(year, month)
+                const list = renderArr(monthToDayCount, year, month, 1)
+                //这个月1号是周几 则补t - 1 天
+                let topIsWeekday = getDayToWeekday(year, month, 1)
+                topIsWeekday = topIsWeekday ? topIsWeekday - 1 : 6
+                let lastMonths = renderArr(getMonthToDay(year, month - 1), year, month - 1, 0)
+                if (month <= 0) {
+                    lastMonths = renderArr(getMonthToDay(year - 1, 11), year - 1, 11, 0)
+                }
+                const { length: len } = lastMonths
+                // 上个月一周在日历中有多少天
+                let _nextMonths = renderArr(42 - list.length, year, month * 1 + 1, 2)
+                if (month >= 11) {
+                    _nextMonths = renderArr(42 - list.length, year * 1 + 1, 0, 2)
+                }
+                list.unshift(...lastMonths.slice(len - topIsWeekday, len))
+                list.push(..._nextMonths)
+                let tbodyNode = []
+                let lastStart = 0
+                let _tbodyNode = list
+                    .map(i => {
+                        return `<td class="${[
+                            i.isThisMonth === 1 ? '' : 'prev-next-day',
+                            date.getDate() == i.text && i.isThisMonth === 1 && month == date.getMonth() ? 'today' : '',
+                            day == i.text ? 'active' : ''
+                        ].join(' ')}" data-date="${i.date}" title="${i.date}"><div class='cell-inner'>${
+                            i.text
+                        }</div></td>`
+                    })
+                    .forEach((_, index, arr) => {
+                        //分割6份
+                        const { length: count } = weekList
+                        if (!((index + 1) % count)) {
+                            tbodyNode.push(`<tr>${arr.slice(lastStart, index + 1).join('')}</tr>`)
+                            lastStart = index + 1
+                        }
+                    })
+
+                tbody.innerHTML = tbodyNode.join('')
+                console.log(tbodyNode)
+                // console.log(list)
+            }
+            pinckerRender()
+            const [con] = document.getElementsByClassName('container')
+        </script>
+    </body>
+</html>

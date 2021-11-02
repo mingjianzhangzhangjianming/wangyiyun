@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+            }
+            #box {
+                width: 100px;
+                height: 100px;
+                padding: 10px;
+                border: 1px dashed #e7e7e7;
+                background-color: deepskyblue;
+                margin-left: 40px;
+            }
+        </style>
+    </head>
+    <body>
+        <div style="margin-left: 160px; position: relative">
+            <!-- 5454 -->
+            <div id="box" tagName="SPAN">6464</div>
+        </div>
+        <script>
+            const { offsetParent, offsetHeight, offsetWidth, offsetLeft, offsetTop } = document.getElementById('box')
+            document.getElementById('box').onsubmit = e => console.log(e)
+            console.dir(document.getElementById('box'))
+            console.log({ offsetParent, offsetHeight, offsetWidth, offsetLeft, offsetTop })
+            //获取元素偏移量
+            const getElementOffSetLeft = el => {
+                if (!el) {
+                    throw warn('el is undefined')
+                }
+                let { offsetParent, offsetLeft } = el
+                while (offsetParent != null) {
+                    offsetLeft += offsetParent.offsetLeft
+                    offsetParent = offsetParent.offsetParent
+                }
+                return offsetLeft
+            }
+            console.log(getElementOffSetLeft(document.getElementById('box')))
+        </script>
+    </body>
+</html>
