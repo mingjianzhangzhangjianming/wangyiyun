@@ -1,0 +1,11 @@
+/*!
+          Mock - 模拟请求 & 模拟数据
+          https://github.com/nuysoft/Mock
+          墨智 mozhi.gyy@taobao.com nuysoft@gmail.com
+      */
+
+/*!
+  Copyright (c) 2018 Jed Watson.
+  Licensed under the MIT License (MIT), see
+  http://jedwatson.github.io/classnames
+*/
